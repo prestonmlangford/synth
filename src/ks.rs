@@ -78,6 +78,26 @@ impl Filter {
     }
 }
 
+fn normalize(h: Vec<f64>) -> Vec<f64> {
+    use rustfft::algorithm::Radix4;
+    use rustfft::FFT;
+    use rustfft::num_complex::Complex;
+    
+    let fft = Radix4::new(h.len(), false);
+    let mut input: Vec<Complex<f64>> = h.iter().map(|x| Complex::new(*x, 0.0)).collect();
+    let mut output: Vec<Complex<f64>> = input.clone();
+    
+    fft.process(&mut input[..], &mut output);
+    
+    let max = 
+        output.iter().
+        map(|c| c.norm()).
+        fold(0.0, |max,x| if x > max {x} else {max})
+        /(h.len() as f64).sqrt();
+    
+    h.iter().map(|x| 0.9*x/max).collect()
+}
+
 pub fn ks(body: Vec<f64>,freq: f64,n: usize) -> Vec<f64> {
     //use rand_distr::{Normal, Distribution};
     //use rand::thread_rng;
@@ -89,8 +109,9 @@ pub fn ks(body: Vec<f64>,freq: f64,n: usize) -> Vec<f64> {
     
     let correction = (body.len()/2) as f64;
     let mut d = Filter::lagrange_delay(1, FS/freq - correction);
-    let mut h = Filter::new(body);
     
+    let nbody = normalize(body);
+    let mut h = Filter::new(nbody);
     
     let ramp_len = (FS/freq) as usize;
     

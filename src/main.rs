@@ -31,27 +31,14 @@ fn fitness(h: Vec<f64>) -> f64 {
 
 fn main() {
     use std::process;
-
     
-    
-    let dimension = 10;
+    let dimension = 16;
     let de = 
         de::DE::new(dimension,fitness).
-        bound(0.99 / (dimension as f64)).
+        bound(10.0). //0.99 / (dimension as f64)
         init();
-    
-    // ctrlc::set_handler(|| {
-    //     let best = de.best_solution();
-    //     println!("");
-    //     println!("{:?}",best.fitness);
-    //     println!("{:?}",best.position);
-    //     process::exit(0);
-    // }).expect("Error setting Ctrl-C handler");
         
     for solution in de {
-        
         println!("{:?} -> {:?}",solution.fitness,solution.position);
-        
-        
     }
 }
