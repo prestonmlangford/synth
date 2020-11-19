@@ -14,12 +14,18 @@ lazy_static! {
 
 
 fn mse(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
-    let ita = a.iter();
-    let itb = b.iter();
     
-    ita.zip(itb).
-    map(|(x,y)| {let d = x - y; d*d}).
-    fold(0.0,|sum,x| sum + x)
+    let energy = 
+        a.iter().zip(b.iter()).
+        map(|(x,y)| {let s = x + y; s*s}).
+        fold(0.0,|sum,x| sum + x);
+    
+    let squared_difference = 
+        a.iter().zip(b.iter()).
+        map(|(x,y)| {let d = x - y; d*d}).
+        fold(0.0,|sum,x| sum + x);
+        
+    squared_difference/energy
 }
 
 fn fitness(h: Vec<f64>) -> f64 {
@@ -29,16 +35,27 @@ fn fitness(h: Vec<f64>) -> f64 {
     mse(&test,&IDEAL)
 }
 
-fn main() {
-    use std::process;
+fn make_pluck(h: Vec<f64>){
+    let y = ks::ks(h,196.0,(4.0*FS) as usize);
+    wav::write(y, "pluck.wav");
+}
+
+fn optimize(){
     
     let dimension = 16;
     let de = 
         de::DE::new(dimension,fitness).
-        bound(10.0). //0.99 / (dimension as f64)
+        bound(0.1). //0.99 / (dimension as f64)
         init();
+    
         
     for solution in de {
         println!("{:?} -> {:?}",solution.fitness,solution.position);
+        make_pluck(solution.position);
     }
+}
+
+fn main() {
+    //make_pluck();
+    optimize();
 }

@@ -78,6 +78,9 @@ impl Filter {
     }
 }
 
+//how much error does a zero signal get
+//how much error does a running average LP get
+
 fn normalize(h: Vec<f64>) -> Vec<f64> {
     use rustfft::algorithm::Radix4;
     use rustfft::FFT;
@@ -92,10 +95,14 @@ fn normalize(h: Vec<f64>) -> Vec<f64> {
     let max = 
         output.iter().
         map(|c| c.norm()).
-        fold(0.0, |max,x| if x > max {x} else {max})
-        /(h.len() as f64).sqrt();
+        fold(0.0, |max,x| if x > max {x} else {max});
     
-    h.iter().map(|x| 0.9*x/max).collect()
+    // println!("max gain {:?}",max);
+    // for (i,c) in output.iter().map(|c| c.norm()).enumerate() {
+    //    println!("output[{}] = {}",i,c);
+    // }
+    let eps = 0.00000001;
+    h.iter().map(|x| 0.999*x/(max + eps)).collect()
 }
 
 pub fn ks(body: Vec<f64>,freq: f64,n: usize) -> Vec<f64> {
@@ -128,5 +135,11 @@ pub fn ks(body: Vec<f64>,freq: f64,n: usize) -> Vec<f64> {
         fb = d.next(y[i]);
     }
     
-    y
+    let max = 
+        y.iter().
+        map(|x| x.abs()).
+        fold(0.0, |max,x| if x > max {x} else {max});
+    
+    let eps = 0.000000001;
+    y.iter().map(|x| x/(max + eps)).collect()
 }

@@ -110,7 +110,7 @@ impl DE {
         let urange = Uniform::new_inclusive(0.0, 1.0);
         for _ in 0..self.np {
             
-            let position: Vec<f64> = (0..self.d).map(|_| self.max*(rng.sample(urange) - 0.5)).collect();
+            let position: Vec<f64> = (0..self.d).map(|_| 1.0 + self.max*(rng.sample(urange) - 0.5)).collect();
             let fitness = (self.fit)(position.clone()); 
             let solution = Solution{position, fitness};
             self.pop.push(solution);
