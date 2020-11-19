@@ -1,5 +1,6 @@
 use rand::Rng;
 use rand::distributions::Uniform;
+use rayon::prelude::*;
 
 #[derive(Clone)]
 pub struct Solution {
@@ -38,35 +39,37 @@ impl DE {
         if !self.ready {
             return Err("Must call init before use!");
         }
-        
-        let mut rng = rand::thread_rng();
         let urange = Uniform::new_inclusive(0.0, 1.0);
         
-        for x in 0..self.pop.len() {
-            let sel = choose(3, 0, self.pop.len(), x);
-            let r = rng.gen_range(0, self.d);    
-            let mut y = (&self.pop[x]).clone();
-            
-            for i in 0..y.position.len() {
-                let u = rng.sample(urange);
-                if (i == r) || (u < self.cr) {
-                    let a = self.pop[sel[0]].position[i];
-                    let b = self.pop[sel[1]].position[i];
-                    let c = self.pop[sel[2]].position[i];
-                    y.position[i] = a + self.f*(b - c);
-                }
-            }
-            
-            y.fitness = (self.fit)(y.position.clone());
-            
-            if y.fitness <= self.pop[x].fitness {
-                self.pop[x] = y;
+        self.pop = self.pop.par_iter().enumerate()
+            .map(|(i,x)| {
+                let mut rng = rand::thread_rng();
+                let sel = choose(3, 0, self.pop.len(), i);
+                let r = rng.gen_range(0, self.d);
+                let mut y = x.clone();
                 
-                if self.pop[x].fitness < self.pop[self.best].fitness {
-                    self.best = x;
+                for i in 0..y.position.len() {
+                    let u = rng.sample(urange);
+                    if (i == r) || (u < self.cr) {
+                        let a = self.pop[sel[0]].position[i];
+                        let b = self.pop[sel[1]].position[i];
+                        let c = self.pop[sel[2]].position[i];
+                        y.position[i] = a + self.f*(b - c);
+                    }
                 }
-            }
-        }
+                y.fitness = (self.fit)(y.position.clone());
+            
+                if y.fitness <= x.fitness {
+                    y
+                } else {
+                    x.clone()
+                }
+            }).collect();
+        
+        let (best,_) = self.pop.iter().enumerate()
+            .fold((0,0.0),|(b,m),(i,x)| if x.fitness <= m {(i,x.fitness)} else {(b,m)});
+        
+        self.best = best;
         
         return Ok(())
     }
