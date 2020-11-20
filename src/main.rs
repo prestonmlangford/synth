@@ -13,26 +13,22 @@ lazy_static! {
 }
 
 
-fn mse(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
-    
-    let energy = 
-        a.iter().zip(b.iter()).
-        map(|(x,y)| {let s = x + y; s*s}).
-        fold(0.0,|sum,x| sum + x);
-    
-    let squared_difference = 
-        a.iter().zip(b.iter()).
-        map(|(x,y)| {let d = x - y; d*d}).
-        fold(0.0,|sum,x| sum + x);
-        
-    squared_difference/energy
+fn corr(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
+    let mb: f64 = b.iter().sum::<f64>() / (b.len() as f64);
+    let ma: f64 = a.iter().sum::<f64>() / (a.len() as f64);
+    let va: f64 = a.iter().map(|x| {let d = x - ma; d*d}).sum::<f64>();
+    let vb: f64 = b.iter().map(|x| {let d = x - mb; d*d}).sum::<f64>();
+
+    a.iter().zip(b.iter()).
+    map(|(ai,bi)| (ai - ma)*(bi - mb)).
+    sum::<f64>()/(va*vb).sqrt()
 }
 
 fn fitness(h: Vec<f64>) -> f64 {
     let n = IDEAL.len();
     let f = 196.0;
     let test = ks::ks(h,f,n);
-    mse(&test,&IDEAL)
+    corr(&test,&IDEAL)
 }
 
 fn make_pluck(h: Vec<f64>){
