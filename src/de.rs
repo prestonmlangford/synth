@@ -36,6 +36,7 @@ fn choose(count: usize, lo: usize, hi: usize, avoid: usize) -> Vec<usize> {
 
 impl DE {
     fn step(&mut self) -> Result<(),&'static str> {
+        println!("WTF");
         if !self.ready {
             return Err("Must call init before use!");
         }
@@ -112,7 +113,6 @@ impl DE {
         let mut rng = rand::thread_rng();
         let urange = Uniform::new_inclusive(0.0, 1.0);
         for _ in 0..self.np {
-            
             let position: Vec<f64> = (0..self.d).map(|_| 1.0 + self.max*(rng.sample(urange) - 0.5)).collect();
             let fitness = (self.fit)(position.clone()); 
             let solution = Solution{position, fitness};

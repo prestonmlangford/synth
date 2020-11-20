@@ -7,11 +7,9 @@ mod wav;
 #[macro_use]
 extern crate lazy_static;
 
-
 lazy_static! {
     static ref IDEAL: Vec<f64> = wav::read("ideal.wav");
 }
-
 
 fn corr(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
     let mb: f64 = b.iter().sum::<f64>() / (b.len() as f64);
@@ -28,7 +26,7 @@ fn fitness(h: Vec<f64>) -> f64 {
     let n = IDEAL.len();
     let f = 196.0;
     let test = ks::ks(h,f,n);
-    corr(&test,&IDEAL)
+    1.0 - corr(&test,&IDEAL).abs()
 }
 
 fn make_pluck(h: &Vec<f64>){
@@ -37,16 +35,6 @@ fn make_pluck(h: &Vec<f64>){
 }
 
 fn main() {
-    use std::fs::OpenOptions;
-    use std::io::prelude::*;
-
-    let mut file = OpenOptions::new()
-        .truncate(true)
-        .append(true)
-        .create(true)
-        .open("coefficients.log")
-        .unwrap();
-
     let dimension = 16;
     let de = 
         de::DE::new(dimension,fitness).
@@ -54,12 +42,7 @@ fn main() {
         init();
     
     for solution in de {
-        println!("{:?}",solution.fitness);
-        
+        println!("{:?} -> {:?}",solution.fitness,solution.position);        
         make_pluck(&solution.position);
-        
-        if let Err(e) = writeln!(file, "{:?}\n",solution.position) {
-            eprintln!("Couldn't write to file: {}", e);
-        }
     }
 }
