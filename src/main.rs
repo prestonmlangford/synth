@@ -31,27 +31,35 @@ fn fitness(h: Vec<f64>) -> f64 {
     corr(&test,&IDEAL)
 }
 
-fn make_pluck(h: Vec<f64>){
-    let y = ks::ks(h,196.0,(4.0*FS) as usize);
+fn make_pluck(h: &Vec<f64>){
+    let y = ks::ks(h.clone(),196.0,(4.0*FS) as usize);
     wav::write(y, "pluck.wav");
 }
 
-fn optimize(){
-    
+fn main() {
+    use std::fs::OpenOptions;
+    use std::io::prelude::*;
+
+    let mut file = OpenOptions::new()
+        .truncate(true)
+        .append(true)
+        .create(true)
+        .open("coefficients.log")
+        .unwrap();
+
     let dimension = 16;
     let de = 
         de::DE::new(dimension,fitness).
         bound(0.1). //0.99 / (dimension as f64)
         init();
     
-        
     for solution in de {
-        println!("{:?} -> {:?}",solution.fitness,solution.position);
-        make_pluck(solution.position);
+        println!("{:?}",solution.fitness);
+        
+        make_pluck(&solution.position);
+        
+        if let Err(e) = writeln!(file, "{:?}\n",solution.position) {
+            eprintln!("Couldn't write to file: {}", e);
+        }
     }
-}
-
-fn main() {
-    //make_pluck();
-    optimize();
 }
