@@ -36,7 +36,6 @@ fn choose(count: usize, lo: usize, hi: usize, avoid: usize) -> Vec<usize> {
 
 impl DE {
     fn step(&mut self) -> Result<(),&'static str> {
-        println!("WTF");
         if !self.ready {
             return Err("Must call init before use!");
         }
