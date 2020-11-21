@@ -68,8 +68,9 @@ fn xcorr(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
 fn fitness(h: Vec<f64>) -> f64 {
     let n = IDEAL.len();
     let f = 196.0;
-    let test = ks::ks(h,f,n);
-    1.0 - xcorr(&test,&IDEAL)
+    let test = ks::ks(h.clone(),f,n);
+    let s = (h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)).sqrt();
+    s - xcorr(&test,&IDEAL)
 }
 
 fn make_pluck(h: &Vec<f64>){
