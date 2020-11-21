@@ -78,9 +78,6 @@ impl Filter {
     }
 }
 
-//how much error does a zero signal get
-//how much error does a running average LP get
-
 fn normalize(h: Vec<f64>) -> Vec<f64> {
     use rustfft::algorithm::Radix4;
     use rustfft::FFT;
