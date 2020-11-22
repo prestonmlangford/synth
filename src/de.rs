@@ -180,7 +180,7 @@ impl Iterator for DE {
     type Item = Solution;
     
     fn next(&mut self) -> Option<Solution> {
-        match self.step() {
+        match self.gradient_step() {
             Ok(_) => Some(self.pop[self.best].clone()),
             Err(e) => {
                 println!("{:?}",e); 
