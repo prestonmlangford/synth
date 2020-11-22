@@ -103,11 +103,10 @@ fn normalize(h: Vec<f64>) -> Vec<f64> {
 }
 
 pub fn ks(body: Vec<f64>,freq: f64,n: usize) -> Vec<f64> {
-    //use rand_distr::{Normal, Distribution};
-    //use rand::thread_rng;
-    //let normal = Normal::new(0.0, 1.0).unwrap();
-    //let mut randn = normal.sample_iter(thread_rng());
-    //let burst_len = (0.01 * FS) as usize;
+    use rand_distr::{Normal, Distribution};
+    use rand::thread_rng;
+    let normal = Normal::new(0.0, 1.0).unwrap();
+    let mut randn = normal.sample_iter(thread_rng());
     
     let mut y: Vec<f64> = vec![0.0;n];
     
@@ -117,13 +116,13 @@ pub fn ks(body: Vec<f64>,freq: f64,n: usize) -> Vec<f64> {
     let nbody = normalize(body);
     let mut h = Filter::new(nbody);
     
-    let ramp_len = (FS/freq) as usize;
+    let input_len = (FS/freq) as usize;
     
     let mut fb = 0.0;
     for i in 0..n {
-        let x = if i < ramp_len {
-            //let r = randn.next().unwrap();
-            let r = 0.01 * ((i as f64) - ((ramp_len/2) as f64));
+        let x = if i < input_len {
+            let r = randn.next().unwrap();
+            //let r = 0.01 * ((i as f64) - ((ramp_len/2) as f64));
             r + fb
         } else {
             fb
