@@ -70,8 +70,9 @@ fn fitness(h: Vec<f64>) -> f64 {
     let f = 196.0;
     let test = ks::ks(h.clone(),f,n);
     let s = (h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)).sqrt();
-    s + 1.0 - xcorr(&test,&IDEAL)
+    0.01*s + 1.0 - xcorr(&test,&IDEAL)
 }
+
 fn fitness2(h: Vec<f64>) -> f64 {
     h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)
 }
@@ -91,21 +92,14 @@ fn main() {
 
     let mut now = Instant::now();
     for (i,solution) in de.enumerate() {
-        println!("{} fitness: {:?}, ms: {}",
-            i,
+        println!("{:?}\n fitness: {:?}, ms: {}, iteration: {}\n\n",
+            solution.position,
             solution.fitness,
-            now.elapsed().as_millis()
+            now.elapsed().as_millis(),
+            i
         );
-        // println!("{:?}\n fitness: {:?}, ms: {}\n\n",
-        //     solution.position,
-        //     solution.fitness,
-        //     now.elapsed().as_millis()
-        // );
 
-        if solution.fitness < 1.0 {
-            break;
-        }
-        //make_pluck(&solution.position);
+        make_pluck(&solution.position);
         now = Instant::now();
     }
 }
