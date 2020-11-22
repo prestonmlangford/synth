@@ -34,6 +34,14 @@ fn choose(count: usize, lo: usize, hi: usize, avoid: usize) -> Vec<usize> {
     selection[1..].to_vec()
 }
 
+fn norm(v: &Vec<f64>) -> f64 {
+    v.iter().map(|x| x*x).sum::<f64>().sqrt()
+}
+
+fn sub(a: &Vec<f64>, b: &Vec<f64>) -> Vec<f64> {
+    a.iter().zip(b.iter()).map(|(ai,bi)| ai-bi).collect()
+}
+
 impl DE {
     fn step(&mut self) -> Result<(),&'static str> {
         if !self.ready {
@@ -47,18 +55,64 @@ impl DE {
                 let sel = choose(3, 0, self.pop.len(), i);
                 let r = rng.gen_range(0, self.d);
                 let mut y = x.clone();
-                
+                let a = &self.pop[sel[0]].position;
+                let b = &self.pop[sel[1]].position;
+                let c = &self.pop[sel[2]].position;
+
                 for i in 0..y.position.len() {
                     let u = rng.sample(urange);
                     if (i == r) || (u < self.cr) {
-                        let a = self.pop[sel[0]].position[i];
-                        let b = self.pop[sel[1]].position[i];
-                        let c = self.pop[sel[2]].position[i];
-                        y.position[i] = a + self.f*(b - c);
+                        y.position[i] = a[i] + self.f*(b[i] - c[i]);
                     }
                 }
                 y.fitness = (self.fit)(y.position.clone());
             
+                if y.fitness <= x.fitness {
+                    y
+                } else {
+                    x.clone()
+                }
+            }).collect();
+        
+        let (best,_) = self.pop.iter().enumerate()
+            .fold((0,0.0),|(b,m),(i,x)| if x.fitness <= m {(i,x.fitness)} else {(b,m)});
+        
+        self.best = best;
+        
+        return Ok(())
+    }
+    
+    fn gradient_step(&mut self) -> Result<(),&'static str> {
+        if !self.ready {
+            return Err("Must call init before use!");
+        }
+        let urange = Uniform::new_inclusive(0.0, 1.0);
+        
+        self.pop = self.pop.par_iter().enumerate()
+            .map(|(i,x)| {
+                let mut rng = rand::thread_rng();
+                let sel = choose(2, 0, self.pop.len(), i);
+                let r = rng.gen_range(0, self.d);
+                let mut y = x.clone();
+                
+                let a = &self.pop[sel[0]];
+                let b = &self.pop[sel[1]];
+                
+                
+                let ax = sub(&a.position,&x.position);
+                let bx = sub(&b.position,&x.position);
+                let dax = b.fitness*(x.fitness - a.fitness).signum()/(a.fitness + b.fitness);
+                let dbx = a.fitness*(x.fitness - b.fitness).signum()/(a.fitness + b.fitness);
+                
+                for k in 0..y.position.len() {
+                    let u = rng.sample(urange);
+                    if (i == r) || (u < self.cr) {
+                        let delta = dax*ax[k] + dbx*bx[k];
+                        y.position[k] += self.f*delta;
+                    }
+                }
+                y.fitness = (self.fit)(y.position.clone());
+                
                 if y.fitness <= x.fitness {
                     y
                 } else {

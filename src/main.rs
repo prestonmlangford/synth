@@ -70,7 +70,10 @@ fn fitness(h: Vec<f64>) -> f64 {
     let f = 196.0;
     let test = ks::ks(h.clone(),f,n);
     let s = (h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)).sqrt();
-    s - xcorr(&test,&IDEAL)
+    s + 1.0 - xcorr(&test,&IDEAL)
+}
+fn fitness2(h: Vec<f64>) -> f64 {
+    h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)
 }
 
 fn make_pluck(h: &Vec<f64>){
@@ -79,21 +82,30 @@ fn make_pluck(h: &Vec<f64>){
 }
 
 fn main() {
-    let dimension = 16;
+    let dimension = 64;
     let de = 
         de::DE::new(dimension,fitness).
-        bound(0.1). //0.99 / (dimension as f64)
-        population_size(10).
+        bound(10.0). //0.99 / (dimension as f64)
+        population_size(10*dimension).
         init();
-    
+
     let mut now = Instant::now();
-    for solution in de {
-        println!("{:?}\n fitness: {:?}, ms: {}\n\n",
-            solution.position,
+    for (i,solution) in de.enumerate() {
+        println!("{} fitness: {:?}, ms: {}",
+            i,
             solution.fitness,
             now.elapsed().as_millis()
         );
-        make_pluck(&solution.position);
+        // println!("{:?}\n fitness: {:?}, ms: {}\n\n",
+        //     solution.position,
+        //     solution.fitness,
+        //     now.elapsed().as_millis()
+        // );
+
+        if solution.fitness < 1.0 {
+            break;
+        }
+        //make_pluck(&solution.position);
         now = Instant::now();
     }
 }
