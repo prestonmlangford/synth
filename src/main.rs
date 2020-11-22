@@ -69,8 +69,9 @@ fn fitness(h: Vec<f64>) -> f64 {
     let n = IDEAL.len();
     let f = 196.0;
     let test = ks::ks(h.clone(),f,n);
-    let s = (h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)).sqrt();
-    0.01*s + 1.0 - xcorr(&test,&IDEAL)
+    //let s = (h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)).sqrt();
+    //0.01*s + 1.0 - xcorr(&test,&IDEAL)
+    1.0 - xcorr(&test,&IDEAL)
 }
 
 fn fitness2(h: Vec<f64>) -> f64 {
