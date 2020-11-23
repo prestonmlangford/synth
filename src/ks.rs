@@ -118,18 +118,18 @@ pub fn ks(body: Vec<f64>,freq: f64,n: usize) -> Vec<f64> {
     
     let input_len = (FS/freq) as usize;
     
-    let mut x = 1.0;
+    let mut fb = 1.0;
     for i in 0..n {
-        // let x = if i < input_len {
-        //     let r = randn.next().unwrap();
-        //     //let r = 0.01 * ((i as f64) - ((ramp_len/2) as f64));
-        //     r + fb
-        // } else {
-        //     fb
-        // };
+        let x = if i < input_len {
+            //let r = randn.next().unwrap();
+            let r = 0.01 * ((i as f64) - ((input_len/2) as f64));
+            r + fb
+        } else {
+            fb
+        };
         
         y[i] = h.next(x);
-        x = d.next(y[i]);
+        fb = d.next(y[i]);
     }
     
     let max = 
