@@ -74,6 +74,17 @@ fn fitness(h: Vec<f64>) -> f64 {
     1.0 - xcorr(&test,&IDEAL)
 }
 
+fn ackley(x: Vec<f64>) -> f64 {
+    let a = 20.0;
+    let b = 0.2;
+    let c = 2.0*3.1415926535;
+    let d = x.len() as f64;
+    let s = (x.iter().map(|xi| xi*xi).sum::<f64>()/d).sqrt();
+    let f = x.iter().map(|xi| (c*xi).cos()).sum::<f64>()/d;
+    
+    -a*(-b*s).exp() - f.exp() + a + (1.0 as f64).exp()
+}
+
 fn fitness2(h: Vec<f64>) -> f64 {
     h.iter().map(|x| x*x).sum::<f64>()/(h.len() as f64)
 }
@@ -86,7 +97,7 @@ fn make_pluck(h: &Vec<f64>){
 fn main() {
     let dimension = 64;
     let de = 
-        de::DE::new(dimension,fitness).
+        de::DE::new(dimension,ackley).
         bound(10.0). //0.99 / (dimension as f64)
         population_size(10*dimension).
         init();
